@@ -9,7 +9,6 @@ const io = new Server(server);
 app.use(express.static("client"));
 
 let rooms = {}; // ex: { room1: { text: "", users: [], token: "" } }
-
 let activeConnections = 0
 let eventsPerMinute = 0;
 

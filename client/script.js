@@ -1,4 +1,4 @@
-let socket = null;
+let socket = io();
 let username = "";
 let room = "";
 let token = "";
@@ -21,17 +21,13 @@ function addMessage(msg) {
 }
 
 // --- Connexion au serveur ---
-function connectSocket() {
+function verifChamps() {
     if (!username || !room || !token) {
         alert("Veuillez remplir tous les champs !");
-        return;
+        return false
     }
+    return true
 
-    socket = io();
-
-    setupSocketEvents();
-
-    userInfo.textContent = `Connecté en tant que ${username} (room: ${room})`;
 }
 
 // créer
@@ -40,13 +36,14 @@ createBtn.addEventListener("click", () => {
     room = document.getElementById("room").value.trim();
     token = document.getElementById("token").value.trim();
 
-    connectSocket();
-
+    if( !verifChamps()) {
+        return;
+    }
     socket.emit("create room", { username, room, token }, (ack) => {
         if (ack && ack.ok) {
             loginDiv.classList.add("hidden");
             boardDiv.classList.remove("hidden");
-        } else alert("Erreur en créant le salon.");
+        } else alert(ack.error);
     });
 });
 
@@ -56,13 +53,14 @@ joinBtn.addEventListener("click", () => {
     room = document.getElementById("room").value.trim();
     token = document.getElementById("token").value.trim();
 
-    connectSocket();
-
+    if( !verifChamps()) {
+        return;
+    }
     socket.emit("join room", { username, room, token }, (ack) => {
         if (ack && ack.ok) {
             loginDiv.classList.add("hidden");
             boardDiv.classList.remove("hidden");
-        } else alert("Erreur en rejoignant le salon.");
+        } else alert(ack.error);
     });
 });
 
@@ -76,26 +74,24 @@ leaveBtn.addEventListener("click", () => {
     loginDiv.classList.remove("hidden");
 });
 
-// --- Gestion des événements Socket.IO ---
-function setupSocketEvents() {
-    socket.on("connect", () => {
-        addMessage(" Connecté au serveur.");
-    });
+socket.on("connect", () => {
+    addMessage(" Connecté au serveur.");
+});
 
-    socket.on("disconnect", () => {
-        addMessage("Deco du serveur.");
-    });
+socket.on("disconnect", () => {
+    addMessage("Deco du serveur.");
+});
 
-    socket.on("room message", (data) => {
-        addMessage(`${data.message}`);
-    });
+socket.on("room message", (data) => {
+    addMessage(`${data.message}`);
+});
 
-    socket.on("modification text", (data) => {
-        if (sharedText.value !== data.update) {
-            sharedText.value = data.update;
-        }
-    });
-}
+socket.on("modification text", (data) => {
+    if (sharedText.value !== data.update) {
+        sharedText.value = data.update;
+    }
+});
+
 
 // --- Synchronisation du texte ---
 sharedText.addEventListener("input", () => {

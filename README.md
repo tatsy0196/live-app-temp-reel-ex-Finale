@@ -24,16 +24,16 @@ La différence, c’est que le serveur ne répond pas tout de suite : il garde l
 Une fois que la donnée change, le serveur renvoie la réponse, et le client relance une requête pour “rester à l’écoute”
 C’est donc un échange unidirectionnel (serveur → client pour la donnée, mais c’est toujours le client qui initie la communication)
 
-avantage: très simple à mettre, compatible avec la plupart des serveur et navigateurs, pas besoin de protocoles particuliers
+avantage: très simple à mettre, compatible avec la plupart  des serveur et navigateurs, pas besoin de protocoles particuliers
 Limites : pas très efficace, car il y a toujours une latence entre deux requêtes et peu adapté en cas de mise à jour tres fréquentes
 Cas d’usage typique : un système de notification ou de messagerie simple, où les mises à jour ne sont pas ultra fréquentes
 
-**Server-Sent Events (SSE)**, c’est une connexion HTTP un peu speciale que le client ouvre une fois vers le serveur.
+**Server-Sent Events (SSE)**, c’est une connexion HTTP un peeu speciale que le client ouvre une fois vers le serveur.
 Cette connexion reste ouverte, et le serveur peut envoyer des messages au fur et à mesure, sans que le client ait besoin de redemander
 C’est donc une communication unidirectionnel (serveur → client uniquement).
 
 Avantages : plus léger que WebSocket, fonctionne très bien avec HTTP/HTTPS classique, facile à gérer côté navigateur
-Limites : le client ne peut pas envoyer de messages via ce canal 
+Limites : le client ne peut pas envoyer  de messages via ce canal 
 Cas d’usage typique : flux de données en temps réel comme des notifications, un tableau de bord qui se met à jour automatiquement, ou un suivi de progression.
 
 **WebSockets**, eux, fonctionnent différemment : le client établit une connexion persistante avec le serveur, qui reste ouverte tant que nécessaire.
@@ -57,7 +57,7 @@ Illustrez chacun avec un exemple concret.
 
 namespace : c'est un espace de communication séparé à l’intérieur du serveur comme ex /, /admin, /chat, etc. ça permet de séparer 
 les accès au différent espace et eviter améliorer la securité car on peut empecher l'accès à admin par exemple
-Rooms : des “sous-groupes” à l’intérieur d’un namespace. un client peut rejoindre une ou plusieurs rooms, et le serveur peut envoyer 
+Rooms : des “sous-groupes” à l’intérieur d’un namespace . un client peut rejoindre une ou plusieurs rooms, et le serveur peut envoyer 
 un message uniquement aux membres de cette room. ça permet de mieux cible les destinataires
 ```pseudo 
 io.on('connection', socket => {
@@ -112,26 +112,29 @@ Prometheus et Grafana : pour collecter et visualiser les métriques (connexions,
 Donnez 5 bonnes pratiques pour assurer la fiabilité et la performance d’une application web temps réel (côté serveur et client).
 
 ---
-
+Il est important d'avoir des logs clairs et qui permette un bon suivit de l'etat du serveur ou des differentes erreur 
+un bon suivit de metrique pour pouvoir anticiper les besoins de puissance supplementaire ou juste detectée. 
 
 
 ## 💻 **Partie 2 – Développement pratique (3h00 – 70 points + bonus)**
 
 ## Commande de lancement 
 node server/index.js
+## les url
+http://localhost:3000 l'applications
+http://localhost:3000/status json avec les infos de suivi
 
-
-
+## architecture 
 Pour l'architecture serveur, elle s'articule autour de trois fonctions 
-join room permet de rejoindre une room si le token est bons.
+- join room permet de rejoindre une room si le token est bons.
+- create room  verifie qu'une room avec un nom identique n'existe pas deja
+- modification text qui renvoie le texte une fois modifié
+il est également les variables 
+- rooms: garde en mémoir les salons leurs utilisateurs et le token d'accès (en claire pour des questions de temps )
+- activeConnections qui suit le nb d'utilisateur connecté avec un methode simple +1 quand on rentre dans connection et -1 pour déconnection
+- eventsPerMinute donne l'info du nombre d'action realiser dans la derniere minute avec une methode peu fiable mais simple
 
-create room  verifie qu'une room avec un nom identique n'existe pas deja 
+Cotés client on a une organisation proche de l'exercice 2 en utilisant des zones cachées pour la partie connexion et la partie texte libre 
 
-modification text qui renvoie le texte une fois modifié
-
-Dans le serveur il y a ```let rooms = {}``` qui stock les rooms avec 
-
-http://localhost:3000 l'applications 
-http://localhost:3000/status json avec les infos de suivi 
-
-j'ai localisé un probleme autour de la connexion 
+## Problemes
+le systeme d'update n'est pas parfait, car il prend chaque nouveau character ce qui cause un potentiel surchage server 
