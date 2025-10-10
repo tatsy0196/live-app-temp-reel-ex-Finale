@@ -20,7 +20,6 @@ function addMessage(msg) {
     messages.scrollTop = messages.scrollHeight;
 }
 
-// --- Connexion au serveur ---
 function verifChamps() {
     if (!username || !room || !token) {
         alert("Veuillez remplir tous les champs !");
