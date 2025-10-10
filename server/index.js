@@ -33,11 +33,11 @@ app.get('/status', (req, res) => {
 // Écoute des connexions Socket.IO
 io.on('connection', (socket) => {
     console.log('Un utilisateur est connecté');
+    activeConnections++
 
     // ... dans io.on('connection', (socket) => { ... });
     socket.on('join room', (data,callback) => {
         eventsPerMinute++;
-        activeConnections++
 
         const { username, room, token } = data;
 
@@ -90,7 +90,6 @@ io.on('connection', (socket) => {
 
     });
 
-
     socket.on('modification text', (data) => {
         rooms[data.room].text = data.update;
         io.to(data.room).emit('modification text', {
@@ -107,19 +106,39 @@ io.on('connection', (socket) => {
 
         const username = socket.data.username;
         const room = socket.data.room;
-        activeConnections--
-
-        if (room && rooms[room]) {
+        if (rooms[room]) {
             rooms[room].users = rooms[room].users.filter(u => u !== username);
 
             if (rooms[room].users.length === 0) { //delete si plus personne
                 delete rooms[room];
             }
 
-            io.to(room).emit('room message', { message: `${username} a quitté la room` });
+            io.to(room).emit('room message', {message: `${username} a quitté la room`});
         }
-        console.log('Un utilisateur est déconnecté');
+        console.log(`${username} a quitté le salon ${room}`);
         eventsPerMinute++;
+    });
+
+    socket.on('disconnect', () => {
+
+        const username = socket.data.username;
+        const room = socket.data.room;
+        activeConnections--
+        if (username && room) {
+            if (rooms[room]) {
+                rooms[room].users = rooms[room].users.filter(u => u !== username);
+
+                if (rooms[room].users.length === 0) { //delete si plus personne
+                    delete rooms[room];
+                }
+
+                io.to(room).emit('room message', {message: `${username} a quitté la room`});
+            }
+            console.log(`${username} a quitté le salon ${room}`);
+            eventsPerMinute++;
+        }
+        console.log('Utilisateur déconnecté:', socket.id);
+
     });
 });
 
