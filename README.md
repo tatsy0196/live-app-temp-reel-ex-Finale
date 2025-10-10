@@ -21,7 +21,7 @@ Comparez **Polling long**, **Server-Sent Events (SSE)** et **WebSockets** en ind
 
 **Polling long*** fonctionne comme une requête classique avec le client qui émet une requête au serveur
 La différence, c’est que le serveur ne répond pas tout de suite : il garde la connexion ouverte jusqu’à ce qu’une nouvelle donnée soit disponible
-Une fois que la donnée change, le serveur renvoie la réponse, et le client relance ensuite une nouvelle requête pour “rester à l’écoute”
+Une fois que la donnée change, le serveur renvoie la réponse, et le client relance une requête pour “rester à l’écoute”
 C’est donc un échange unidirectionnel (serveur → client pour la donnée, mais c’est toujours le client qui initie la communication)
 
 avantage: très simple à mettre, compatible avec la plupart des serveur et navigateurs, pas besoin de protocoles particuliers
@@ -117,3 +117,21 @@ Donnez 5 bonnes pratiques pour assurer la fiabilité et la performance d’une a
 
 ## 💻 **Partie 2 – Développement pratique (3h00 – 70 points + bonus)**
 
+## Commande de lancement 
+node server/index.js
+
+
+
+Pour l'architecture serveur, elle s'articule autour de trois fonctions 
+join room permet de rejoindre une room si le token est bons.
+
+create room  verifie qu'une room avec un nom identique n'existe pas deja 
+
+modification text qui renvoie le texte une fois modifié
+
+Dans le serveur il y a ```let rooms = {}``` qui stock les rooms avec 
+
+http://localhost:3000 l'applications 
+http://localhost:3000/status json avec les infos de suivi 
+
+j'ai localisé un probleme autour de la connexion 

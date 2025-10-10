@@ -1,10 +1,37 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CollabBoard</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<h1>collabBoard</h1>
 
+<!-- Connexion -->
+<div id="login">
+    <input id="username" type="text" placeholder="Entrez votre pseudo">
+    <input id="room" type="text" placeholder="Nom du salon (ex: projetX)">
+    <input id="token" type="text" placeholder="Token d’accès (ex: 12345)">
+    <div class="buttons">
+        <button id="createBtn">Créer une room</button>
+        <button id="joinBtn">Rejoindre une room</button>
+    </div>
+</div>
+
+<!-- Tableau collaboratif -->
+<div id="board" class="hidden">
+    <div class="board-header">
+        <p id="userInfo"></p>
+        <button id="leaveBtn" class="danger">Quitter</button>
+    </div>
+
+    <textarea id="sharedText" placeholder="Commencez à écrire ici..."></textarea>
+    <div id="messages"></div>
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>
