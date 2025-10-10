@@ -65,8 +65,7 @@ joinBtn.addEventListener("click", () => {
 
 // déconnexion
 leaveBtn.addEventListener("click", () => {
-    if (socket) socket.disconnect();
-    socket = null;
+    socket.emit("leave room", { room: room });
     sharedText.value = "";
     messages.innerHTML = "";
     boardDiv.classList.add("hidden");

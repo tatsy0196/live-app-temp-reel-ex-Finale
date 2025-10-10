@@ -33,11 +33,12 @@ app.get('/status', (req, res) => {
 // Écoute des connexions Socket.IO
 io.on('connection', (socket) => {
     console.log('Un utilisateur est connecté');
-    activeConnections++
 
     // ... dans io.on('connection', (socket) => { ... });
     socket.on('join room', (data,callback) => {
         eventsPerMinute++;
+        activeConnections++
+
         const { username, room, token } = data;
 
         if (!rooms[room]) {
@@ -102,7 +103,7 @@ io.on('connection', (socket) => {
     });
 
 
-    socket.on('disconnect', () => {
+    socket.on('leave room', () => {
 
         const username = socket.data.username;
         const room = socket.data.room;
