@@ -1,4 +1,6 @@
-let socket = io();
+let socket = io({reconnection: true,
+    reconnectionAttempts: 10,
+    reconnectionDelay: 2000});
 let username = "";
 let room = "";
 let token = "";
@@ -12,7 +14,11 @@ const sharedText = document.getElementById("sharedText");
 const messages = document.getElementById("messages");
 const userInfo = document.getElementById("userInfo");
 
-// --- Fonction utilitaire ---
+const latencySpan = document.createElement("span");
+latencySpan.style.fontSize = "12px";
+latencySpan.style.color = "#777";
+userInfo.appendChild(latencySpan);
+
 function addMessage(msg) {
     const p = document.createElement("p");
     p.textContent = msg;
@@ -42,6 +48,8 @@ createBtn.addEventListener("click", () => {
         if (ack && ack.ok) {
             loginDiv.classList.add("hidden");
             boardDiv.classList.remove("hidden");
+            startLatencyPing();
+            startMonitoring();
         } else alert(ack.error);
     });
 });
@@ -59,6 +67,8 @@ joinBtn.addEventListener("click", () => {
         if (ack && ack.ok) {
             loginDiv.classList.add("hidden");
             boardDiv.classList.remove("hidden");
+            startLatencyPing();
+            startMonitoring();
         } else alert(ack.error);
     });
 });
@@ -75,7 +85,20 @@ leaveBtn.addEventListener("click", () => {
 socket.on("connect", () => {
     addMessage(" Connecté au serveur.");
 });
-
+socket.on("reconnect", () => {
+    addMessage("Tentative de reconnexion...");
+    if (username && room && token) {
+        socket.emit("reconnect-attach", { username, room, token }, (ack) => {
+            if (ack && ack.ok) {
+                addMessage("Reconnecté à la room !");
+                sharedText.value = ack.update || "";
+                startLatencyPing();
+            } else {
+                addMessage("Reconnexion échouée : " + (ack?.error || "inconnue"));
+            }
+        });
+    }
+});
 socket.on("disconnect", () => {
     addMessage("Deco du serveur.");
 });
@@ -92,7 +115,7 @@ socket.on("modification text", (data) => {
 
 
 // --- Synchronisation du texte ---
-sharedText.addEventListener("input", () => {
+sharedText.addEventListener("input", throttle(() => {
     if (socket && socket.connected) {
         socket.emit("modification text", {
             username,
@@ -100,5 +123,50 @@ sharedText.addEventListener("input", () => {
             update: sharedText.value
         });
     }
+},500));
+
+
+
+let latencyInterval;
+function startLatencyPing() {
+    clearInterval(latencyInterval);
+    latencyInterval = setInterval(() => {
+        if (socket.connected) {
+            socket.emit("latency-pong", Date.now());
+        }
+    }, 3000);
+}
+
+socket.on("latency-estimate", (data) => {
+    if (data && typeof data.rtt === "number") {
+        latencySpan.textContent = `Latence estimée : ${data.rtt} ms`;
+    }
 });
 
+let monitoringInterval;
+function startMonitoring() {
+    clearInterval(monitoringInterval);
+    monitoringInterval = setInterval(async () => {
+        try {
+            const res = await fetch("/status");
+            const status = await res.json();
+            if (status) {
+                latencySpan.textContent =
+                    `${status.UserCount} utilisateurs | Rooms: ${status.rooms.length} | Latence estimée: ${latencySpan.textContent.split(': ')[1] || "?"} | Événements/min: ${status.eventsPerMinute}`;
+            }
+        } catch (e) {
+            console.warn("Erreur monitoring:", e);
+        }
+    }, 5000);
+}
+
+function throttle(fn, limit) {
+    let lastCall = 0;
+    return function(...args) {
+        const now = Date.now();
+        if (now - lastCall >= limit) { // Si le délai est passé
+            lastCall = now;
+            fn.apply(this, args); // Exécute la fonction
+        }
+    };
+}

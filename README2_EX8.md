@@ -107,3 +107,17 @@ b) Expliquez brièvement le principe d’exponential backoff.
 dans les grande ligne on va faire plusieurs tentative de reconnexion mais pour menager les ressource plus le temps passe plus elle seront eloigné les une des autres 
 ex 2s puis 4s puis 8s ect 
 
+
+explication
+npm run start pour lancer
+http://localhost:3001/logs permet de voire les logs stocker en bdd
+
+chaque salle et proteger par un mot de passe hashé coté serveur 
+une fois dans la salle tout les utilisateurs peuvent modifier le texte en temps reel avec un throttle de 0,5s
+en cas de déconnexion, le client tente automatiquement de se reconnecter (reconnect-attach)
+l'utilisateur vois aussi un affichage de la latence estimée grace au ping pong entre serveur et client ainsi que le nombre de personne connecté
+
+coté server il y comme regle de securité 
+une validation coté serveur des informations de connection entrée par l'utilisateur
+avec un nettoyage des input utilisateur avec sanitize
+une limite 30 modifications par minute a etait mise en place pour chaque utilisateur 
